@@ -85,16 +85,6 @@ resource "aws_eip" "jenkins_elastic_ip_2" {
   }
 }
 
-# resource "aws_eip_association" "jenkins_elastic_ip_1_association" {
-#   network_interface_id   = aws_nat_gateway.jenkins_nat_gateway_1.network_interface_id
-#   allocation_id = aws_eip.jenkins_elastic_ip_1.id
-# }
-
-# resource "aws_eip_association" "jenkins_elastic_ip_2_association" {
-#   network_interface_id   = aws_nat_gateway.jenkins_nat_gateway_2.network_interface_id
-#   allocation_id = aws_eip.jenkins_elastic_ip_2.id
-# }
-
 resource "aws_nat_gateway" "jenkins_nat_gateway_1" {
   allocation_id = aws_eip.jenkins_elastic_ip_1.id
   subnet_id     = aws_subnet.jenkins_public_subnet_1.id
@@ -305,7 +295,7 @@ resource "aws_efs_mount_target" "jenkins_efs_mount_target_private_2" {
   security_groups = [ aws_security_group.jenkins_efs_sg.id ]
 }
 
-resource "aws_efs_access_point" "test" {
+resource "aws_efs_access_point" "jenkins_efs_access_point" {
   file_system_id = aws_efs_file_system.jenkins_efs.id
   posix_user {
     uid = 1000
@@ -327,62 +317,7 @@ resource "aws_ecs_cluster" "jenkins_ecs_cluster" {
   capacity_providers = [ "FARGATE" ]
 }
 
-resource "aws_iam_role" "jenkins_execution_role" {
-  name = "jenkins_execution_role"
-  path = "/"
-  managed_policy_arns = [ "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy" ]
-
-  # Terraform's "jsonencode" function converts a
-  # Terraform expression result to valid JSON syntax.
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Sid    = ""
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-      },
-    ]
-  })
-
+resource "aws_cloudwatch_log_group" "jenkins_log_group" {
+  name = "Jenkins"
+  retention_in_days = 14
 }
-
-resource "aws_iam_role" "jenkins_role" {
-  name = "jenkins_role"
-  path = "/"
-  managed_policy_arns = [ "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy" ]
-
-  # Terraform's "jsonencode" function converts a
-  # Terraform expression result to valid JSON syntax.
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Sid    = ""
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-      },
-    ]
-  })
-
-  inline_policy  {
-    name = "jenkins_role_inline_policy"
-    policy = jsonencode({
-      Version = "2012-10-17"
-      Statement = [
-        {
-          Action   = ["elasticfilesystem:ClientMount", "elasticfilesystem:ClientWrite"]
-          Effect   = "Allow"
-          Resource = "*"
-        },
-      ]
-    })
-  }
-}
-
