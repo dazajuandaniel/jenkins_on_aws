@@ -8,7 +8,7 @@ This Terraform module allows you to deploy Jenkins in a cluster using:
 * Persistent storage using EFS
 
 ## Architecture 
-![architecture diagram](./images/architecture_overview.png)
+![architecture diagram](./images/architecture_overview.PNG)
 
 ## End Result
 ![jenkins](./images/jenkins_load_balancer.png)
