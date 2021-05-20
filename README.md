@@ -14,4 +14,5 @@ This Terraform module allows you to deploy Jenkins in a cluster using:
 ![jenkins](./images/jenkins_load_balancer.png)
 
 ## Roadmap
+- [ ] Add further details about the elements/resources
 - [ ] Running with ECS Slave Agents
