@@ -321,3 +321,90 @@ resource "aws_cloudwatch_log_group" "jenkins_log_group" {
   name = "Jenkins"
   retention_in_days = 14
 }
+
+resource "aws_iam_policy" "jenkins_efs_policy" {
+  name        = "jenkins_efs_policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "elasticfilesystem:ClientMount",
+          "elasticfilesystem:ClientWrite"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "jenkins_efs_policy_attach" {
+   role       = aws_iam_role.jenkins_role.name
+   policy_arn = aws_iam_policy.jenkins_efs_policy.arn
+}
+
+resource "aws_iam_role" "jenkins_role" {
+  name = "jenkins_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2008-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
+
+resource "aws_iam_policy" "jenkins_task_policy" {
+  name        = "jenkins_task_policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+    ]
+  })
+  
+}
+
+resource "aws_iam_role_policy_attachment" "jenkins_task_policy_attach" {
+   role       = aws_iam_role.jenkins_task_role.name
+   policy_arn = aws_iam_policy.jenkins_task_policy.arn
+}
+
+resource "aws_iam_role" "jenkins_task_role" {
+  name = "jenkins_task_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2008-10-17"
+    Statement = [
+        {
+        "Sid": "",
+        "Effect": "Allow",
+        "Principal": {
+          "Service": "ecs-tasks.amazonaws.com"
+        },
+        "Action": "sts:AssumeRole"
+      },
+    ]
+  })
+}

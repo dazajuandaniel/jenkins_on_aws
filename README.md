@@ -16,3 +16,4 @@ This Terraform module allows you to deploy Jenkins in a cluster using:
 ## Roadmap
 - [ ] Add further details about the elements/resources
 - [ ] Running with ECS Slave Agents
+- [ ] Add Terraform Tests
